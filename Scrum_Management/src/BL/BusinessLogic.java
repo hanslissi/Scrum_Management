@@ -6,38 +6,50 @@
 package BL;
 
 import java.util.ArrayList;
-import javax.swing.AbstractListModel;
+import javax.swing.table.AbstractTableModel;
 
 /**
  *
  * @author johannesriedmueller
  */
-public class BusinessLogic extends AbstractListModel<User>{
+public class BusinessLogic extends AbstractTableModel {
+
     private ArrayList<Task> tasks = new ArrayList<>();
     private ArrayList<User> users = new ArrayList<>();
-    
-    public void add(User user){
+    private final String[] userColNames = {"Username", "Color"};
+
+    public void add(User user) {
         users.add(user);
-        fireIntervalAdded(user, users.size()-1, users.size()-1);
-    }
-    
-    public void add(Task task){
-        tasks.add(task);
-    }
-    
-    @Override
-    public int getSize() {
-        return users.size();
+        fireTableRowsInserted(users.size()-1, users.size()-1);
     }
 
-    @Override
-    public User getElementAt(int index) {
-        return users.get(index);
+    public void add(Task task) {
+        tasks.add(task);
     }
 
     public ArrayList<User> getUsers() {
         return users;
     }
+
+    @Override
+    public String getColumnName(int column) {
+        return userColNames[column];
+    }
+
     
-    
+    @Override
+    public int getRowCount() {
+        return users.size();
+    }
+
+    @Override
+    public int getColumnCount() {
+        return userColNames.length;
+    }
+
+    @Override
+    public Object getValueAt(int rowIndex, int columnIndex) {
+        return users.get(rowIndex);
+    }
+
 }

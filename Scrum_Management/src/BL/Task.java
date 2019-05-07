@@ -5,6 +5,7 @@
  */
 package BL;
 
+import java.awt.Color;
 import java.time.LocalDate;
 
 /**
@@ -16,18 +17,19 @@ public class Task {
     private User user;
     private LocalDate startDate;
     private LocalDate endDate;
-    
+    private Color color;
 
     public Task(String taskName, User user) {
         this.taskName = taskName;
         this.user = user;
     }
 
-    public Task(String taskName, User user, LocalDate startDate, LocalDate endDate) {
+    public Task(String taskName, User user, LocalDate startDate, LocalDate endDate, Color color) {
         this.taskName = taskName;
         this.user = user;
         this.startDate = startDate;
         this.endDate = endDate;
+        this.color = color;
     }
 
     public String getTaskName() {
@@ -45,6 +47,11 @@ public class Task {
     public LocalDate getEndDate() {
         return endDate;
     }
+
+    public Color getColor() {
+        return color;
+    }
+    
     
     
     

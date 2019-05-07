@@ -10,6 +10,7 @@ import BL.DataBase;
 import BL.Project;
 import BL.Task;
 import BL.User;
+import BL.myTableCellRenderer;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -42,7 +43,8 @@ public class MainScreenGUI extends javax.swing.JFrame {
             Logger.getLogger(MainScreenGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-        liUsers.setModel((ListModel<User>) bl);
+        tableUsers.setModel(bl);
+        tableUsers.setDefaultRenderer(Object.class, new myTableCellRenderer());
     }
 
     /**
@@ -56,13 +58,13 @@ public class MainScreenGUI extends javax.swing.JFrame {
 
         jPanel1 = new javax.swing.JPanel();
         btAddUser = new javax.swing.JButton();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        liUsers = new javax.swing.JList<>();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        tableUsers = new javax.swing.JTable();
         jPanel2 = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
         btAddTask = new javax.swing.JButton();
         btProductBacklog = new javax.swing.JButton();
-        jPanel4 = new javax.swing.JPanel();
+        paDraw = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -77,9 +79,20 @@ public class MainScreenGUI extends javax.swing.JFrame {
         });
         jPanel1.add(btAddUser, java.awt.BorderLayout.PAGE_END);
 
-        jScrollPane1.setViewportView(liUsers);
+        tableUsers.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane2.setViewportView(tableUsers);
 
-        jPanel1.add(jScrollPane1, java.awt.BorderLayout.CENTER);
+        jPanel1.add(jScrollPane2, java.awt.BorderLayout.CENTER);
 
         getContentPane().add(jPanel1, java.awt.BorderLayout.LINE_START);
 
@@ -106,18 +119,18 @@ public class MainScreenGUI extends javax.swing.JFrame {
 
         jPanel2.add(jPanel3, java.awt.BorderLayout.PAGE_END);
 
-        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
-        jPanel4.setLayout(jPanel4Layout);
-        jPanel4Layout.setHorizontalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 533, Short.MAX_VALUE)
+        javax.swing.GroupLayout paDrawLayout = new javax.swing.GroupLayout(paDraw);
+        paDraw.setLayout(paDrawLayout);
+        paDrawLayout.setHorizontalGroup(
+            paDrawLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 327, Short.MAX_VALUE)
         );
-        jPanel4Layout.setVerticalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        paDrawLayout.setVerticalGroup(
+            paDrawLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 465, Short.MAX_VALUE)
         );
 
-        jPanel2.add(jPanel4, java.awt.BorderLayout.CENTER);
+        jPanel2.add(paDraw, java.awt.BorderLayout.CENTER);
 
         getContentPane().add(jPanel2, java.awt.BorderLayout.CENTER);
 
@@ -202,8 +215,8 @@ public class MainScreenGUI extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JList<User> liUsers;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JPanel paDraw;
+    private javax.swing.JTable tableUsers;
     // End of variables declaration//GEN-END:variables
 }

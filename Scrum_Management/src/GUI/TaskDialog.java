@@ -155,14 +155,14 @@ public class TaskDialog extends javax.swing.JDialog {
                 int res = JOptionPane.showOptionDialog(null, "Do you really want to create a Task with no name?", "Caution!", JOptionPane.YES_NO_OPTION, 1, null, null, null);
                 if (res == 0) {
                     User user = cbUser.getItemAt(cbUser.getSelectedIndex());
-                    task = new Task("No Taskname", user, startDate, endDate);
+                    task = new Task("No Taskname", user, startDate, endDate, user.getColor());
                     ok = true;
                     this.dispose();
                 }
             } else {
                 String name = tfTaskName.getText();
                 User user = cbUser.getItemAt(cbUser.getSelectedIndex());
-                task = new Task(name, user, startDate, endDate);
+                task = new Task(name, user, startDate, endDate, user.getColor());
                 ok = true;
                 this.dispose();
             }
