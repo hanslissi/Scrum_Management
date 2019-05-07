@@ -5,10 +5,47 @@
  */
 package BL;
 
+import java.time.LocalDate;
+
 /**
  *
  * @author johannesriedmueller
  */
 public class Task {
+    private String taskName;
+    private User user;
+    private LocalDate startDate;
+    private LocalDate endDate;
+    
+
+    public Task(String taskName, User user) {
+        this.taskName = taskName;
+        this.user = user;
+    }
+
+    public Task(String taskName, User user, LocalDate startDate, LocalDate endDate) {
+        this.taskName = taskName;
+        this.user = user;
+        this.startDate = startDate;
+        this.endDate = endDate;
+    }
+
+    public String getTaskName() {
+        return taskName;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+    
+    
     
 }

@@ -13,10 +13,12 @@ public class Project {
     private String name;
     private String description;
     private User projectLeader;
+    private final String projectId;
     
-    public Project(String name, String description) {
+    public Project(int projectId, String name, String description) {
         this.name = name;
         this.description = description;
+        this.projectId = Integer.toString(projectId);
     }
 
     public String getName() {
@@ -30,6 +32,12 @@ public class Project {
     public User getProjectLeader() {
         return projectLeader;
     }
+
+    public String getProjectId() {
+        return projectId;
+    }
+    
+    
 
     public void setProjectLeader(User projectLeader) {
         this.projectLeader = projectLeader;

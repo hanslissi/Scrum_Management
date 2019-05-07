@@ -24,10 +24,11 @@ public class ProjectCreationGUI extends javax.swing.JFrame {
     private final String placeholderName = "Name of Project";
     private final String placeholderDescription = "Short Description";
     private Project project;
-    
+    private int projectId = 1;
 
     public ProjectCreationGUI() {
         initComponents();
+        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         tfName.setText(placeholderName);
         tfDescription.setText(placeholderDescription);
     }
@@ -115,13 +116,13 @@ public class ProjectCreationGUI extends javax.swing.JFrame {
         }
     }
 
-    private void addProjectToDataBase(Project project) throws SQLException{
+    private void addProjectToDataBase(Project project) throws SQLException {
         Statement stat = DataBase.getDbInstance().getConn().createStatement();
-        String sqlString = String.format("INSERT INTO public.\"Project\"(\"ProjID\", \"Name\", \"Description\") VALUES (1, \'%s\', \'%s\');",project.getName(),project.getDescription());
-        ResultSet rs = stat.executeQuery(sqlString);
+        String sqlString = String.format("INSERT INTO public.\"Project\"(\"ProjID\", \"Name\", \"Description\") VALUES (%s, \'%s\', \'%s\');", project.getProjectId(), project.getName(), project.getDescription());
+        stat.executeQuery(sqlString);
         stat.close();
     }
-    
+
     private void tfNameFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tfNameFocusGained
         updatePlaceholder(true, tfName, placeholderName);
     }//GEN-LAST:event_tfNameFocusGained
@@ -141,60 +142,29 @@ public class ProjectCreationGUI extends javax.swing.JFrame {
     private void btCreateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btCreateActionPerformed
         if (tfName.getText().equals(placeholderName)
                 || tfDescription.getText().equals(placeholderDescription)) {
-            int res = JOptionPane.showOptionDialog(null, "Do you really want to create a Project with some defaults?", "Caution!", JOptionPane.YES_NO_OPTION,1,null,null,null);
-            if(res==0){
-                this.project = new Project(tfName.getText(), tfDescription.getText());
+            int res = JOptionPane.showOptionDialog(null, "Do you really want to create a Project with some defaults?", "Caution!", JOptionPane.YES_NO_OPTION, 1, null, null, null);
+            if (res == 0) {
+                this.project = new Project(projectId, tfName.getText(), tfDescription.getText());
                 try {
                     addProjectToDataBase(project);
                 } catch (SQLException ex) {
                     Logger.getLogger(ProjectCreationGUI.class.getName()).log(Level.SEVERE, null, ex);
                 }
+            new MainScreenGUI(project).setVisible(true);
+            this.dispose();
             }
-        }
-        else{
+        } else {
             try {
-                this.project = new Project(tfName.getText(), tfDescription.getText());
+                this.project = new Project(projectId, tfName.getText(), tfDescription.getText());
                 addProjectToDataBase(project);
             } catch (SQLException ex) {
                 Logger.getLogger(ProjectCreationGUI.class.getName()).log(Level.SEVERE, null, ex);
             }
+            new MainScreenGUI(project).setVisible(true);
+            this.dispose();
         }
     }//GEN-LAST:event_btCreateActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(ProjectCreationGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(ProjectCreationGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(ProjectCreationGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(ProjectCreationGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new ProjectCreationGUI().setVisible(true);
-            }
-        });
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btCreate;

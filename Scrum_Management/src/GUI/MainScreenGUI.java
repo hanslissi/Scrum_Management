@@ -5,17 +5,44 @@
  */
 package GUI;
 
+import BL.BusinessLogic;
+import BL.DataBase;
+import BL.Project;
+import BL.Task;
+import BL.User;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.time.format.DateTimeFormatter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
+import javax.swing.ListModel;
+
 /**
  *
  * @author johannesriedmueller
  */
 public class MainScreenGUI extends javax.swing.JFrame {
 
-    /**
-     * Creates new form MainScreenGUI
-     */
-    public MainScreenGUI() {
+    private BusinessLogic bl = new BusinessLogic();
+    private Project project;
+    private static DateTimeFormatter dtf;
+
+    static {
+        dtf = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+    }
+
+    public MainScreenGUI(Project project) {
         initComponents();
+        this.project = project;
+        try {
+            updateEveryThing();
+        } catch (SQLException ex) {
+            Logger.getLogger(MainScreenGUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+        liUsers.setModel((ListModel<User>) bl);
     }
 
     /**
@@ -30,11 +57,12 @@ public class MainScreenGUI extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         btAddUser = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jList1 = new javax.swing.JList<>();
+        liUsers = new javax.swing.JList<>();
         jPanel2 = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
         btAddTask = new javax.swing.JButton();
         btProductBacklog = new javax.swing.JButton();
+        jPanel4 = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -49,12 +77,7 @@ public class MainScreenGUI extends javax.swing.JFrame {
         });
         jPanel1.add(btAddUser, java.awt.BorderLayout.PAGE_END);
 
-        jList1.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public String getElementAt(int i) { return strings[i]; }
-        });
-        jScrollPane1.setViewportView(jList1);
+        jScrollPane1.setViewportView(liUsers);
 
         jPanel1.add(jScrollPane1, java.awt.BorderLayout.CENTER);
 
@@ -83,66 +106,104 @@ public class MainScreenGUI extends javax.swing.JFrame {
 
         jPanel2.add(jPanel3, java.awt.BorderLayout.PAGE_END);
 
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 533, Short.MAX_VALUE)
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 465, Short.MAX_VALUE)
+        );
+
+        jPanel2.add(jPanel4, java.awt.BorderLayout.CENTER);
+
         getContentPane().add(jPanel2, java.awt.BorderLayout.CENTER);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void addUserToDataBase(User user) throws SQLException {
+        Statement stat = DataBase.getDbInstance().getConn().createStatement();
+        String sqlString = String.format("INSERT INTO public.\"User\"(\"UserID\", \"fk_ProjID\", \"Username\") VALUES (DEFAULT, \'%s\', \'%s\');", project.getProjectId(), user.getName());
+        stat.executeQuery(sqlString);
+        stat.close();
+    }
+
+    private String checkUserId(String username) throws SQLException {
+        Statement stat = DataBase.getDbInstance().getConn().createStatement();
+        String sqlString = String.format("SELECT * FROM public.\"User\" WHERE \"Username\" = \'%s\'", username);
+        ResultSet rs = stat.executeQuery(sqlString);
+        while (rs.next()) {
+            return rs.getString("UserID");
+        }
+        return "";
+    }
+
+    public void updateEveryThing() throws SQLException {
+        this.setTitle(project.getName());
+        Statement stat = DataBase.getDbInstance().getConn().createStatement();
+        String sqlString = String.format("SELECT \"Username\", \"UserID\" FROM public.\"User\" WHERE \"fk_ProjID\" = %s;", project.getProjectId());
+        ResultSet rs = stat.executeQuery(sqlString);
+        while (rs.next()) {
+            bl.add(new User(rs.getString("Username"), rs.getString("UserID")));
+        }
+    }
+
+    private void addTaskToDataBase(Task task) throws SQLException {
+        Statement stat = DataBase.getDbInstance().getConn().createStatement();
+        String sqlString = String.format("INSERT INTO public.\"Task\"(\"StartDate\", \"EndDate\", \"fk_ProjID\", \"fk_UserID\", \"TaskName\") VALUES (TO_DATE(\'%s\','DD.MM.YYYY'), TO_DATE(\'%s\','DD.MM.YYYY'), \'%s\', \'%s\', \'%s\');", dtf.format(task.getStartDate()), dtf.format(task.getEndDate()), project.getProjectId(), task.getUser().getUserid(), task.getTaskName());
+        stat.executeQuery(sqlString);
+        stat.close();
+    }
+
     private void btAddUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btAddUserActionPerformed
-        
+        String name = JOptionPane.showInputDialog("Please enter a name:");
+        User user = new User(name);
+        try {
+            addUserToDataBase(user);
+        } catch (SQLException ex) {
+            Logger.getLogger(MainScreenGUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        String userid = "";
+        try {
+            userid = checkUserId(name);
+        } catch (SQLException ex) {
+            Logger.getLogger(MainScreenGUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        if (!userid.equals("")) {
+            bl.add(user.setUserid(userid));
+        }
     }//GEN-LAST:event_btAddUserActionPerformed
 
     private void btAddTaskActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btAddTaskActionPerformed
-        
+        TaskDialog dialog = new TaskDialog(this, true, bl.getUsers());
+        dialog.setVisible(true);
+        if(dialog.isOk()){
+            Task task = dialog.getTask();
+            try {
+                addTaskToDataBase(task);
+            } catch (SQLException ex) {
+                Logger.getLogger(MainScreenGUI.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            bl.add(task);
+        }
     }//GEN-LAST:event_btAddTaskActionPerformed
 
     private void btProductBacklogActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btProductBacklogActionPerformed
-        
+
     }//GEN-LAST:event_btProductBacklogActionPerformed
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(MainScreenGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(MainScreenGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(MainScreenGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(MainScreenGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new MainScreenGUI().setVisible(true);
-            }
-        });
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btAddTask;
     private javax.swing.JButton btAddUser;
     private javax.swing.JButton btProductBacklog;
-    private javax.swing.JList<String> jList1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JList<User> liUsers;
     // End of variables declaration//GEN-END:variables
 }
