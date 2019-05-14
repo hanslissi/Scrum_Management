@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import static java.time.temporal.ChronoUnit.DAYS;
 import java.util.ArrayList;
 import javax.swing.table.AbstractTableModel;
 
@@ -70,12 +71,14 @@ public class BusinessLogic extends AbstractTableModel {
         }
         return "";
     }
-    
+
     /**
-     * Loads every User and every Task of DataBase into BL (so its locally saved)
+     * Loads every User and every Task of DataBase into BL (so its locally
+     * saved)
+     *
      * @param projID
      * @throws SQLException
-     * @throws Exception 
+     * @throws Exception
      */
     public void updateEverythingBL(String projID) throws SQLException, Exception {
         Statement statUsers = DataBase.getDbInstance().getConn().createStatement();
@@ -102,17 +105,63 @@ public class BusinessLogic extends AbstractTableModel {
                     rsTasks.getString("TaskName"),
                     userOfTask,
                     LocalDate.parse(rsTasks.getString("StartDate"), dtfFromDataBase),
-                     LocalDate.parse(rsTasks.getString("EndDate"), dtfFromDataBase)), projID, false);
+                    LocalDate.parse(rsTasks.getString("EndDate"), dtfFromDataBase)), projID, false);
         }
         statTasks.close();
 
     }
 
     public void drawTasks(LocalDate currentWeek, Graphics2D g2, int width, int height) {
+        int i = 1;
         for (Task task : tasks) {
             if (task.getStartDate().isAfter(currentWeek.minusDays(1)) && task.getStartDate().isBefore(currentWeek.plusDays(7))) {
+                Color colorOfText;
+                double y = (299 * task.getColor().getRed() + 587 * task.getColor().getGreen() + 114 * task.getColor().getBlue()) / 1000;
+                if (y >= 128) {
+                    colorOfText = Color.black;
+                } else {
+                    colorOfText = Color.white;
+                }
                 g2.setColor(task.getColor());
-                g2.fillRect(width / 7 * task.getStartDate().getDayOfWeek().getValue() - width / 15, 25, 200, 20);
+                if (task.getEndDate().isBefore(currentWeek.plusDays(7))) {
+                    int days = (int) DAYS.between(task.getStartDate(), task.getEndDate());
+                    g2.fillRect(width / 7 * task.getStartDate().getDayOfWeek().getValue() - width / 15, 25 * i, width / 7 * days, 20);
+                    g2.setColor(colorOfText);
+                    g2.drawString(task.getTaskName(), width / 7 * task.getStartDate().getDayOfWeek().getValue() - width / 15 + 10, 25 * i + 15);
+                } else {
+                    g2.fillRect(width / 7 * task.getStartDate().getDayOfWeek().getValue() - width / 15, 25 * i, width, 20);
+                    g2.setColor(colorOfText);
+                    g2.drawString(task.getTaskName(), width / 7 * task.getStartDate().getDayOfWeek().getValue() - width / 15 + 10, 25 * i + 15);
+                }
+                i++;
+            } else if (task.getEndDate().isAfter(currentWeek.minusDays(1)) && task.getEndDate().isBefore(currentWeek.plusDays(7))) {
+                Color colorOfText;
+                double y = (299 * task.getColor().getRed() + 587 * task.getColor().getGreen() + 114 * task.getColor().getBlue()) / 1000;
+                if (y >= 128) {
+                    colorOfText = Color.black;
+                } else {
+                    colorOfText = Color.white;
+                }
+                g2.setColor(task.getColor());
+                g2.fillRect(0, 25 * i, width / 7 * task.getStartDate().getDayOfWeek().getValue() - width / 15, 20);
+                g2.setColor(colorOfText);
+                g2.drawString(task.getTaskName(), 10, 25 * i + 15);
+                i++;
+            }
+            else if(task.getStartDate().isBefore(currentWeek.minusDays(1)) && task.getEndDate().isAfter(currentWeek.plusDays(6))){
+                System.out.println("hui");
+                Color colorOfText;
+                double y = (299 * task.getColor().getRed() + 587 * task.getColor().getGreen() + 114 * task.getColor().getBlue()) / 1000;
+                if (y >= 128) {
+                    colorOfText = Color.black;
+                } else {
+                    colorOfText = Color.white;
+                }
+                g2.setColor(task.getColor());
+                g2.fillRect(0, 25 * i, width, 20);
+                g2.setColor(colorOfText);
+                g2.drawString(task.getTaskName(), 10, 25 * i + 15);
+                i++;
             }
         }
         g2.setColor(Color.BLACK);

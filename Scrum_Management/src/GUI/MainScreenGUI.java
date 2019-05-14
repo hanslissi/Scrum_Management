@@ -243,6 +243,7 @@ public class MainScreenGUI extends javax.swing.JFrame {
             } catch (SQLException ex) {
                 Logger.getLogger(MainScreenGUI.class.getName()).log(Level.SEVERE, null, ex);
             }
+            updateTimeline(paDraw.getGraphics());
         }
     }//GEN-LAST:event_btAddTaskActionPerformed
 
