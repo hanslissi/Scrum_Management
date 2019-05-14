@@ -51,6 +51,11 @@ public class Task {
     public Color getColor() {
         return color;
     }
+
+    @Override
+    public String toString() {
+        return String.format("%s: %s - %s", taskName, startDate, endDate);
+    }
     
     
     

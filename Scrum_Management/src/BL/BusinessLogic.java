@@ -34,18 +34,22 @@ public class BusinessLogic extends AbstractTableModel {
     }
 
     public void add(User user, String projID, boolean addToDataBase) throws SQLException {
-        users.add(user);
         if (addToDataBase) {
             addUserToDataBase(user, projID);
+            String userID = checkUserId(user.getName());
+            if (!userID.equals("")) {
+                user.setUserid(userID);
+            }
         }
+        users.add(user);
         fireTableRowsInserted(users.size() - 1, users.size() - 1);
     }
 
     public void add(Task task, String projID, boolean addToDataBase) throws SQLException {
-        tasks.add(task);
         if (addToDataBase) {
             addTaskToDataBase(task, projID);
         }
+        tasks.add(task);
     }
 
     public void addUserToDataBase(User user, String projID) throws SQLException {
@@ -142,14 +146,17 @@ public class BusinessLogic extends AbstractTableModel {
                 } else {
                     colorOfText = Color.white;
                 }
+
                 g2.setColor(task.getColor());
-                g2.fillRect(0, 25 * i, width / 7 * task.getStartDate().getDayOfWeek().getValue() - width / 15, 20);
+                if (task.getEndDate().equals(currentWeek)) {
+                    g2.fillRect(0, 25 * i, width / 7 - width / 15, 20);
+                } else {
+                    g2.fillRect(0, 25 * i, width / 7 * task.getEndDate().getDayOfWeek().getValue() - width / 15, 20);
+                }
                 g2.setColor(colorOfText);
                 g2.drawString(task.getTaskName(), 10, 25 * i + 15);
                 i++;
-            }
-            else if(task.getStartDate().isBefore(currentWeek.minusDays(1)) && task.getEndDate().isAfter(currentWeek.plusDays(6))){
-                System.out.println("hui");
+            } else if (task.getStartDate().isBefore(currentWeek.minusDays(1)) && task.getEndDate().isAfter(currentWeek.plusDays(6))) {
                 Color colorOfText;
                 double y = (299 * task.getColor().getRed() + 587 * task.getColor().getGreen() + 114 * task.getColor().getBlue()) / 1000;
                 if (y >= 128) {
@@ -171,6 +178,10 @@ public class BusinessLogic extends AbstractTableModel {
         return users;
     }
 
+    public ArrayList<Task> getTasks() {
+        return tasks;
+    }
+
     @Override
     public String getColumnName(int column) {
         return userColNames[column];
@@ -190,5 +201,5 @@ public class BusinessLogic extends AbstractTableModel {
     public Object getValueAt(int rowIndex, int columnIndex) {
         return users.get(rowIndex);
     }
-
+    
 }

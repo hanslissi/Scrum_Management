@@ -71,7 +71,7 @@ public class MainScreenGUI extends javax.swing.JFrame {
 
     private void drawDate(Graphics2D g2) {
         for (int i = 1; i <= 7; i++) {
-            g2.drawString(currentWeek.plusDays(i-1).format(dtf), paDraw.getWidth() / 7 * i - paDraw.getWidth() / 15 - 30, 17);
+            g2.drawString(currentWeek.plusDays(i - 1).format(dtf), paDraw.getWidth() / 7 * i - paDraw.getWidth() / 15 - 30, 17);
             g2.drawLine(paDraw.getWidth() / 7 * i - paDraw.getWidth() / 15, 20, paDraw.getWidth() / 7 * i - paDraw.getWidth() / 15, paDraw.getHeight());
         }
     }
@@ -211,26 +211,19 @@ public class MainScreenGUI extends javax.swing.JFrame {
         try {
             bl.updateEverythingBL(project.getProjectId());
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(null,ex.getMessage());
+            JOptionPane.showMessageDialog(null, ex.getMessage());
         }
         updateTimeline(paDraw.getGraphics());
     }
     private void btAddUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btAddUserActionPerformed
         String name = JOptionPane.showInputDialog("Please enter a name:");
         User user = new User(name);
-        String userid = "";
         try {
-            userid = bl.checkUserId(name);
+            bl.add(user, project.getProjectId(), true);
         } catch (SQLException ex) {
             Logger.getLogger(MainScreenGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
-        if (!userid.equals("")) {
-            try {
-                bl.add(user.setUserid(userid), project.getProjectId(), true);
-            } catch (SQLException ex) {
-                Logger.getLogger(MainScreenGUI.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
+
     }//GEN-LAST:event_btAddUserActionPerformed
 
     private void btAddTaskActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btAddTaskActionPerformed
@@ -248,7 +241,8 @@ public class MainScreenGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_btAddTaskActionPerformed
 
     private void btProductBacklogActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btProductBacklogActionPerformed
-
+        ProductBacklogGUI productBacklog = new ProductBacklogGUI(bl, currentWeek);
+        productBacklog.setVisible(true);
     }//GEN-LAST:event_btProductBacklogActionPerformed
 
     private void btLeftActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btLeftActionPerformed

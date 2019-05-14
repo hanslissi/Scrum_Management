@@ -49,14 +49,10 @@ public class User {
         this.name = name;
     }
 
-    public User setUserid(String userid) {
+    public void setUserid(String userid) {
         this.userid = userid;
-        return this;
     }
     
-    
-    
-
     @Override
     public String toString() {
         return name;
