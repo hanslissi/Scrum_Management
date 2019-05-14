@@ -24,12 +24,12 @@ public class Task {
         this.user = user;
     }
 
-    public Task(String taskName, User user, LocalDate startDate, LocalDate endDate, Color color) {
+    public Task(String taskName, User user, LocalDate startDate, LocalDate endDate) {
         this.taskName = taskName;
         this.user = user;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.color = color;
+        this.color = user.getColor();
     }
 
     public String getTaskName() {

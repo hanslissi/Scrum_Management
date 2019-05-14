@@ -6,19 +6,20 @@
 package GUI;
 
 import BL.BusinessLogic;
-import BL.DataBase;
 import BL.Project;
 import BL.Task;
 import BL.User;
 import BL.myTableCellRenderer;
-import java.sql.ResultSet;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.RenderingHints;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
-import javax.swing.ListModel;
 
 /**
  *
@@ -28,6 +29,9 @@ public class MainScreenGUI extends javax.swing.JFrame {
 
     private BusinessLogic bl = new BusinessLogic();
     private Project project;
+    private LocalDate currentWeek = LocalDate.now();
+    private Image dbImage;
+    private Graphics2D dbg;
     private static DateTimeFormatter dtf;
 
     static {
@@ -37,14 +41,39 @@ public class MainScreenGUI extends javax.swing.JFrame {
     public MainScreenGUI(Project project) {
         initComponents();
         this.project = project;
+        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+        currentWeek = currentWeek.plusDays(7).minusDays(currentWeek.getDayOfWeek().getValue() + 6);
+        tableUsers.setModel(bl);
+        tableUsers.setDefaultRenderer(Object.class, new myTableCellRenderer());
         try {
             updateEveryThing();
         } catch (SQLException ex) {
             Logger.getLogger(MainScreenGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
-        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-        tableUsers.setModel(bl);
-        tableUsers.setDefaultRenderer(Object.class, new myTableCellRenderer());
+    }
+
+    public void updateTimeline(Graphics g) {
+        //doubleBuffering
+        dbImage = createImage(paDraw.getWidth(), paDraw.getHeight());
+        dbg = (Graphics2D) dbImage.getGraphics();
+        RenderingHints rh = new RenderingHints(
+                RenderingHints.KEY_TEXT_ANTIALIASING,
+                RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        dbg.setRenderingHints(rh);
+        paintComponent(dbg);
+        g.drawImage(dbImage, 0, 0, this);
+    }
+
+    public void paintComponent(Graphics2D g2) {
+        drawDate(g2);
+        bl.drawTasks(currentWeek, g2, paDraw.getWidth(), paDraw.getHeight());
+    }
+
+    private void drawDate(Graphics2D g2) {
+        for (int i = 1; i <= 7; i++) {
+            g2.drawString(currentWeek.plusDays(i-1).format(dtf), paDraw.getWidth() / 7 * i - paDraw.getWidth() / 15 - 30, 17);
+            g2.drawLine(paDraw.getWidth() / 7 * i - paDraw.getWidth() / 15, 20, paDraw.getWidth() / 7 * i - paDraw.getWidth() / 15, paDraw.getHeight());
+        }
     }
 
     /**
@@ -64,6 +93,11 @@ public class MainScreenGUI extends javax.swing.JFrame {
         jPanel3 = new javax.swing.JPanel();
         btAddTask = new javax.swing.JButton();
         btProductBacklog = new javax.swing.JButton();
+        panel = new javax.swing.JPanel();
+        laCurrentWeek = new javax.swing.JLabel();
+        jPanel4 = new javax.swing.JPanel();
+        btLeft = new javax.swing.JButton();
+        btRight = new javax.swing.JButton();
         paDraw = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -119,88 +153,96 @@ public class MainScreenGUI extends javax.swing.JFrame {
 
         jPanel2.add(jPanel3, java.awt.BorderLayout.PAGE_END);
 
+        panel.setLayout(new java.awt.BorderLayout());
+
+        laCurrentWeek.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        laCurrentWeek.setText("Current Week");
+        panel.add(laCurrentWeek, java.awt.BorderLayout.PAGE_START);
+
+        jPanel4.setPreferredSize(new java.awt.Dimension(327, 25));
+        jPanel4.setLayout(new java.awt.GridLayout(1, 2));
+
+        btLeft.setText("<");
+        btLeft.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btLeftActionPerformed(evt);
+            }
+        });
+        jPanel4.add(btLeft);
+
+        btRight.setText(">");
+        btRight.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btRightActionPerformed(evt);
+            }
+        });
+        jPanel4.add(btRight);
+
+        panel.add(jPanel4, java.awt.BorderLayout.PAGE_END);
+
+        paDraw.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentResized(java.awt.event.ComponentEvent evt) {
+                paDrawComponentResized(evt);
+            }
+        });
+
         javax.swing.GroupLayout paDrawLayout = new javax.swing.GroupLayout(paDraw);
         paDraw.setLayout(paDrawLayout);
         paDrawLayout.setHorizontalGroup(
             paDrawLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 327, Short.MAX_VALUE)
+            .addGap(0, 784, Short.MAX_VALUE)
         );
         paDrawLayout.setVerticalGroup(
             paDrawLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 465, Short.MAX_VALUE)
+            .addGap(0, 493, Short.MAX_VALUE)
         );
 
-        jPanel2.add(paDraw, java.awt.BorderLayout.CENTER);
+        panel.add(paDraw, java.awt.BorderLayout.CENTER);
+
+        jPanel2.add(panel, java.awt.BorderLayout.CENTER);
 
         getContentPane().add(jPanel2, java.awt.BorderLayout.CENTER);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void addUserToDataBase(User user) throws SQLException {
-        Statement stat = DataBase.getDbInstance().getConn().createStatement();
-        String sqlString = String.format("INSERT INTO public.\"User\"(\"UserID\", \"fk_ProjID\", \"Username\") VALUES (DEFAULT, \'%s\', \'%s\');", project.getProjectId(), user.getName());
-        stat.executeQuery(sqlString);
-        stat.close();
-    }
-
-    private String checkUserId(String username) throws SQLException {
-        Statement stat = DataBase.getDbInstance().getConn().createStatement();
-        String sqlString = String.format("SELECT * FROM public.\"User\" WHERE \"Username\" = \'%s\'", username);
-        ResultSet rs = stat.executeQuery(sqlString);
-        while (rs.next()) {
-            return rs.getString("UserID");
-        }
-        return "";
-    }
-
-    public void updateEveryThing() throws SQLException {
+    private void updateEveryThing() throws SQLException {
         this.setTitle(project.getName());
-        Statement stat = DataBase.getDbInstance().getConn().createStatement();
-        String sqlString = String.format("SELECT \"Username\", \"UserID\" FROM public.\"User\" WHERE \"fk_ProjID\" = %s;", project.getProjectId());
-        ResultSet rs = stat.executeQuery(sqlString);
-        while (rs.next()) {
-            bl.add(new User(rs.getString("Username"), rs.getString("UserID")));
+        try {
+            bl.updateEverythingBL(project.getProjectId());
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null,ex.getMessage());
         }
+        updateTimeline(paDraw.getGraphics());
     }
-
-    private void addTaskToDataBase(Task task) throws SQLException {
-        Statement stat = DataBase.getDbInstance().getConn().createStatement();
-        String sqlString = String.format("INSERT INTO public.\"Task\"(\"StartDate\", \"EndDate\", \"fk_ProjID\", \"fk_UserID\", \"TaskName\") VALUES (TO_DATE(\'%s\','DD.MM.YYYY'), TO_DATE(\'%s\','DD.MM.YYYY'), \'%s\', \'%s\', \'%s\');", dtf.format(task.getStartDate()), dtf.format(task.getEndDate()), project.getProjectId(), task.getUser().getUserid(), task.getTaskName());
-        stat.executeQuery(sqlString);
-        stat.close();
-    }
-
     private void btAddUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btAddUserActionPerformed
         String name = JOptionPane.showInputDialog("Please enter a name:");
         User user = new User(name);
-        try {
-            addUserToDataBase(user);
-        } catch (SQLException ex) {
-            Logger.getLogger(MainScreenGUI.class.getName()).log(Level.SEVERE, null, ex);
-        }
         String userid = "";
         try {
-            userid = checkUserId(name);
+            userid = bl.checkUserId(name);
         } catch (SQLException ex) {
             Logger.getLogger(MainScreenGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
         if (!userid.equals("")) {
-            bl.add(user.setUserid(userid));
+            try {
+                bl.add(user.setUserid(userid), project.getProjectId(), true);
+            } catch (SQLException ex) {
+                Logger.getLogger(MainScreenGUI.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }//GEN-LAST:event_btAddUserActionPerformed
 
     private void btAddTaskActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btAddTaskActionPerformed
         TaskDialog dialog = new TaskDialog(this, true, bl.getUsers());
         dialog.setVisible(true);
-        if(dialog.isOk()){
+        if (dialog.isOk()) {
             Task task = dialog.getTask();
             try {
-                addTaskToDataBase(task);
+                bl.add(task, project.getProjectId(), true);
             } catch (SQLException ex) {
                 Logger.getLogger(MainScreenGUI.class.getName()).log(Level.SEVERE, null, ex);
             }
-            bl.add(task);
         }
     }//GEN-LAST:event_btAddTaskActionPerformed
 
@@ -208,15 +250,35 @@ public class MainScreenGUI extends javax.swing.JFrame {
 
     }//GEN-LAST:event_btProductBacklogActionPerformed
 
+    private void btLeftActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btLeftActionPerformed
+        currentWeek = currentWeek.minusDays(7);
+        updateTimeline(paDraw.getGraphics());
+    }//GEN-LAST:event_btLeftActionPerformed
+
+    private void btRightActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRightActionPerformed
+        currentWeek = currentWeek.plusDays(7);
+        updateTimeline(paDraw.getGraphics());
+    }//GEN-LAST:event_btRightActionPerformed
+
+    private void paDrawComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_paDrawComponentResized
+        updateTimeline(paDraw.getGraphics());
+    }//GEN-LAST:event_paDrawComponentResized
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btAddTask;
     private javax.swing.JButton btAddUser;
+    private javax.swing.JButton btLeft;
     private javax.swing.JButton btProductBacklog;
+    private javax.swing.JButton btRight;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JLabel laCurrentWeek;
     private javax.swing.JPanel paDraw;
+    private javax.swing.JPanel panel;
     private javax.swing.JTable tableUsers;
     // End of variables declaration//GEN-END:variables
+
 }
