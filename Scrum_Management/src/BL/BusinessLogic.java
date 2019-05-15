@@ -48,6 +48,11 @@ public class BusinessLogic extends AbstractTableModel {
     public void add(Task task, String projID, boolean addToDataBase) throws SQLException {
         if (addToDataBase) {
             addTaskToDataBase(task, projID);
+            String taskID = getLastAddedTaskID();
+            if (!taskID.equals("")) {
+                task.setTaskid(taskID);
+            }
+
         }
         tasks.add(task);
     }
@@ -64,6 +69,16 @@ public class BusinessLogic extends AbstractTableModel {
         String sqlString = String.format("INSERT INTO public.\"Task\"(\"StartDate\", \"EndDate\", \"fk_ProjID\", \"fk_UserID\", \"TaskName\") VALUES (TO_DATE(\'%s\','DD.MM.YYYY'), TO_DATE(\'%s\','DD.MM.YYYY'), \'%s\', \'%s\', \'%s\');", dtf.format(task.getStartDate()), dtf.format(task.getEndDate()), projID, task.getUser().getUserid(), task.getTaskName());
         stat.executeUpdate(sqlString);
         stat.close();
+    }
+
+    public String getLastAddedTaskID() throws SQLException {
+        Statement stat = DataBase.getDbInstance().getConn().createStatement();
+        String sqlString = String.format("SELECT MAX(\"TaskID\") \"Max\" FROM public.\"Task\";");
+        ResultSet set = stat.executeQuery(sqlString);
+        while (set.next()) {
+            return set.getString("Max");
+        }
+        return "";
     }
 
     public String checkUserId(String username) throws SQLException {
@@ -93,7 +108,7 @@ public class BusinessLogic extends AbstractTableModel {
         }
         statUsers.close();
         Statement statTasks = DataBase.getDbInstance().getConn().createStatement();
-        String sqlString2 = String.format("SELECT \"TaskName\", \"fk_UserID\", \"StartDate\", \"EndDate\" FROM public.\"Task\" WHERE \"fk_ProjID\" = %s;", projID);
+        String sqlString2 = String.format("SELECT \"TaskName\", \"fk_UserID\", \"StartDate\", \"EndDate\", \"TaskID\" FROM public.\"Task\" WHERE \"fk_ProjID\" = %s;", projID);
         ResultSet rsTasks = statTasks.executeQuery(sqlString2);
         while (rsTasks.next()) {
             User userOfTask = null;
@@ -105,11 +120,13 @@ public class BusinessLogic extends AbstractTableModel {
             if (userOfTask == null) {
                 throw new Exception("User for task not found!");
             }
-            add(new Task(
+            Task task = new Task(
                     rsTasks.getString("TaskName"),
                     userOfTask,
                     LocalDate.parse(rsTasks.getString("StartDate"), dtfFromDataBase),
-                    LocalDate.parse(rsTasks.getString("EndDate"), dtfFromDataBase)), projID, false);
+                    LocalDate.parse(rsTasks.getString("EndDate"), dtfFromDataBase));
+            task.setTaskid(rsTasks.getString("TaskID"));
+            add(task, projID, false);
         }
         statTasks.close();
 
@@ -174,12 +191,44 @@ public class BusinessLogic extends AbstractTableModel {
         g2.setColor(Color.BLACK);
     }
 
+    public void deleteTaskFromDatabase(String taskid) throws SQLException {
+        Statement stat = DataBase.getDbInstance().getConn().createStatement();
+        String sqlString = String.format("DELETE FROM public.\"Task\" WHERE \"TaskID\" = %s;", taskid);
+        stat.executeUpdate(sqlString);
+        stat.close();
+    }
+    
+    public void deleteUserFromDatabase(String userid) throws SQLException {
+        Statement stat = DataBase.getDbInstance().getConn().createStatement();
+        String sqlString = String.format("DELETE FROM public.\"User\" WHERE \"UserID\" = %s;", userid);
+        stat.executeUpdate(sqlString);
+        stat.close();
+    }
+
     public ArrayList<User> getUsers() {
         return users;
     }
 
     public ArrayList<Task> getTasks() {
         return tasks;
+    }
+
+    public void deleteTask(int idx) throws SQLException {
+        deleteTaskFromDatabase(tasks.get(idx).getTaskid());
+        tasks.remove(idx);
+    }
+    
+    
+    public void deleteUser(int idx) throws SQLException {
+        for (int i = 0; i < tasks.size(); i++) {
+            if(tasks.get(i).getUser() == users.get(idx)){
+                deleteTask(i);
+                i--;
+            }
+        }
+        deleteUserFromDatabase(users.get(idx).getUserid());
+        users.remove(idx);
+        fireTableRowsDeleted(0, users.size()-1);
     }
 
     @Override
@@ -201,5 +250,5 @@ public class BusinessLogic extends AbstractTableModel {
     public Object getValueAt(int rowIndex, int columnIndex) {
         return users.get(rowIndex);
     }
-    
+
 }

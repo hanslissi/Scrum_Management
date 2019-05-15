@@ -7,24 +7,28 @@ package GUI;
 
 import BL.BusinessLogic;
 import BL.Task;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import javax.swing.DefaultListModel;
+import javax.swing.JOptionPane;
 
 /**
  *
  * @author johannesriedmueller
  */
-public class ProductBacklogGUI extends javax.swing.JFrame {
+public class ProductBacklogGUI extends javax.swing.JDialog {
 
     private BusinessLogic bl;
     private LocalDate currentWeek;
     private DefaultListModel dlmAll = new DefaultListModel();
     private DefaultListModel dlmThisWeek = new DefaultListModel();
 
-    public ProductBacklogGUI(BusinessLogic bl, LocalDate currentWeek) {
+    public ProductBacklogGUI(java.awt.Frame parent, boolean modal, BusinessLogic bl, LocalDate currentWeek) {
+        super(parent, modal);
         initComponents();
         this.currentWeek = currentWeek;
         this.bl = bl;
+        this.setSize(900, 300);
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         liAll.setModel(dlmAll);
         liThisWeek.setModel(dlmThisWeek);
@@ -40,6 +44,8 @@ public class ProductBacklogGUI extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        pmDeleteFromAll = new javax.swing.JPopupMenu();
+        miDeleteFromAll = new javax.swing.JMenuItem();
         jPanel2 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -49,7 +55,15 @@ public class ProductBacklogGUI extends javax.swing.JFrame {
         jScrollPane2 = new javax.swing.JScrollPane();
         liAll = new javax.swing.JList<>();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        miDeleteFromAll.setText("Delete Task");
+        miDeleteFromAll.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miDeleteFromAllActionPerformed(evt);
+            }
+        });
+        pmDeleteFromAll.add(miDeleteFromAll);
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         getContentPane().setLayout(new java.awt.GridLayout(1, 2));
 
         jPanel2.setLayout(new java.awt.BorderLayout());
@@ -57,6 +71,7 @@ public class ProductBacklogGUI extends javax.swing.JFrame {
         jLabel1.setText("This Week:");
         jPanel2.add(jLabel1, java.awt.BorderLayout.PAGE_START);
 
+        liThisWeek.setFont(new java.awt.Font("Courier New", 0, 12)); // NOI18N
         liThisWeek.setModel(new javax.swing.AbstractListModel<String>() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
             public int getSize() { return strings.length; }
@@ -73,11 +88,14 @@ public class ProductBacklogGUI extends javax.swing.JFrame {
         jLabel2.setText("All Tasks");
         jPanel1.add(jLabel2, java.awt.BorderLayout.PAGE_START);
 
+        liAll.setFont(new java.awt.Font("Courier New", 0, 12)); // NOI18N
         liAll.setModel(new javax.swing.AbstractListModel<String>() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
             public int getSize() { return strings.length; }
             public String getElementAt(int i) { return strings[i]; }
         });
+        liAll.setComponentPopupMenu(pmDeleteFromAll);
+        liAll.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         jScrollPane2.setViewportView(liAll);
 
         jPanel1.add(jScrollPane2, java.awt.BorderLayout.CENTER);
@@ -87,6 +105,30 @@ public class ProductBacklogGUI extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void miDeleteFromAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miDeleteFromAllActionPerformed
+        if (liAll.getSelectedIndices().length == 1) {
+            int idx = liAll.getSelectedIndex();
+            try {
+                bl.deleteTask(idx);
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(null, "Something went wrong with the database.");
+            }
+            initializeEverything();
+        }
+    }//GEN-LAST:event_miDeleteFromAllActionPerformed
+
+    private void initializeEverything() {
+        dlmAll.removeAllElements();
+        dlmThisWeek.removeAllElements();
+        for (Task task : bl.getTasks()) {
+            if ((task.getStartDate().isAfter(currentWeek.minusDays(1)) && task.getStartDate().isBefore(currentWeek.plusDays(7)))
+                    || (task.getEndDate().isAfter(currentWeek.minusDays(1)) && task.getEndDate().isBefore(currentWeek.plusDays(7)))
+                    || (task.getStartDate().isBefore(currentWeek.minusDays(1)) && task.getEndDate().isAfter(currentWeek.plusDays(7)))) {
+                dlmThisWeek.addElement(task);
+            }
+            dlmAll.addElement(task);
+        }
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
@@ -97,16 +139,7 @@ public class ProductBacklogGUI extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JList<String> liAll;
     private javax.swing.JList<String> liThisWeek;
+    private javax.swing.JMenuItem miDeleteFromAll;
+    private javax.swing.JPopupMenu pmDeleteFromAll;
     // End of variables declaration//GEN-END:variables
-
-    private void initializeEverything() {
-        for (Task task : bl.getTasks()) {
-            if ((task.getStartDate().isAfter(currentWeek.minusDays(1)) && task.getStartDate().isBefore(currentWeek.plusDays(7)))
-                    || (task.getEndDate().isAfter(currentWeek.minusDays(1)) && task.getEndDate().isBefore(currentWeek.plusDays(7)))
-                    || (task.getStartDate().isBefore(currentWeek.minusDays(1)) && task.getEndDate().isAfter(currentWeek.plusDays(7)))) {
-                dlmThisWeek.addElement(task);
-            }
-            dlmAll.addElement(task);
-        }
-    }
 }

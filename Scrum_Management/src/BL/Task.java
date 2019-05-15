@@ -14,6 +14,7 @@ import java.time.LocalDate;
  */
 public class Task {
     private String taskName;
+    private String taskid;
     private User user;
     private LocalDate startDate;
     private LocalDate endDate;
@@ -52,9 +53,17 @@ public class Task {
         return color;
     }
 
+    public String getTaskid() {
+        return taskid;
+    }
+
+    public void setTaskid(String taskid) {
+        this.taskid = taskid;
+    }
+
     @Override
     public String toString() {
-        return String.format("%s: %s - %s", taskName, startDate, endDate);
+        return String.format("%-30s: %s - %s", taskName, startDate, endDate);
     }
     
     

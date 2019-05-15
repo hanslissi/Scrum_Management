@@ -85,6 +85,8 @@ public class MainScreenGUI extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        pmTable = new javax.swing.JPopupMenu();
+        miDeleteUser = new javax.swing.JMenuItem();
         jPanel1 = new javax.swing.JPanel();
         btAddUser = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -99,6 +101,16 @@ public class MainScreenGUI extends javax.swing.JFrame {
         btLeft = new javax.swing.JButton();
         btRight = new javax.swing.JButton();
         paDraw = new javax.swing.JPanel();
+
+        pmTable.setComponentPopupMenu(pmTable);
+
+        miDeleteUser.setText("Delete Selected User");
+        miDeleteUser.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miDeleteUserActionPerformed(evt);
+            }
+        });
+        pmTable.add(miDeleteUser);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -124,6 +136,7 @@ public class MainScreenGUI extends javax.swing.JFrame {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
+        tableUsers.setComponentPopupMenu(pmTable);
         jScrollPane2.setViewportView(tableUsers);
 
         jPanel1.add(jScrollPane2, java.awt.BorderLayout.CENTER);
@@ -241,8 +254,9 @@ public class MainScreenGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_btAddTaskActionPerformed
 
     private void btProductBacklogActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btProductBacklogActionPerformed
-        ProductBacklogGUI productBacklog = new ProductBacklogGUI(bl, currentWeek);
+        ProductBacklogGUI productBacklog = new ProductBacklogGUI(this, true, bl, currentWeek);
         productBacklog.setVisible(true);
+        updateTimeline(paDraw.getGraphics());
     }//GEN-LAST:event_btProductBacklogActionPerformed
 
     private void btLeftActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btLeftActionPerformed
@@ -259,6 +273,21 @@ public class MainScreenGUI extends javax.swing.JFrame {
         updateTimeline(paDraw.getGraphics());
     }//GEN-LAST:event_paDrawComponentResized
 
+    private void miDeleteUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miDeleteUserActionPerformed
+        if (tableUsers.getSelectedRowCount() == 1) {
+            int res = JOptionPane.showOptionDialog(null, "Do you really want to delete the User and all of his/her tasks?", "Caution!", JOptionPane.YES_NO_OPTION, 1, null, null, null);
+            if (res == 0) {
+                int idx = tableUsers.getSelectedRow();
+                try {
+                    bl.deleteUser(idx);
+                    updateTimeline(paDraw.getGraphics());
+                } catch (SQLException ex) {
+                    Logger.getLogger(MainScreenGUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+    }//GEN-LAST:event_miDeleteUserActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btAddTask;
     private javax.swing.JButton btAddUser;
@@ -271,8 +300,10 @@ public class MainScreenGUI extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel laCurrentWeek;
+    private javax.swing.JMenuItem miDeleteUser;
     private javax.swing.JPanel paDraw;
     private javax.swing.JPanel panel;
+    private javax.swing.JPopupMenu pmTable;
     private javax.swing.JTable tableUsers;
     // End of variables declaration//GEN-END:variables
 
