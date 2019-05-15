@@ -116,6 +116,13 @@ public class TaskDialog extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * Just for placeholder management (TextFields)
+     *
+     * @param gained
+     * @param field
+     * @param toSet
+     */
     private void updatePlaceholder(boolean gained, JTextField field, String toSet) {
         if (gained) {
             if (field.getText().equals(toSet)) {
@@ -138,33 +145,45 @@ public class TaskDialog extends javax.swing.JDialog {
         return task;
     }
 
-
+    /**
+     * Does nothing and disposes the window.
+     *
+     * @param evt
+     */
     private void btcancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btcancelActionPerformed
         ok = false;
         this.dispose();
     }//GEN-LAST:event_btcancelActionPerformed
-
+    /**
+     * This will create the task and after that the window will be disposed.
+     *
+     * @param evt
+     */
     private void btCreateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btCreateActionPerformed
         try {
             Calendar cal = Calendar.getInstance();
-            cal.setTime((Date)jsStartDate.getValue());
-            LocalDate startDate = LocalDate.of(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH)+1, cal.get(Calendar.DAY_OF_MONTH));
-            cal.setTime((Date)jsEndDate.getValue());
-            LocalDate endDate = LocalDate.of(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH)+1, cal.get(Calendar.DAY_OF_MONTH));
-            if (tfTaskName.getText().equals(placeholderName)) {
-                int res = JOptionPane.showOptionDialog(null, "Do you really want to create a Task with no name?", "Caution!", JOptionPane.YES_NO_OPTION, 1, null, null, null);
-                if (res == 0) {
+            cal.setTime((Date) jsStartDate.getValue());
+            LocalDate startDate = LocalDate.of(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.DAY_OF_MONTH));
+            cal.setTime((Date) jsEndDate.getValue());
+            LocalDate endDate = LocalDate.of(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.DAY_OF_MONTH));
+            if (startDate.isBefore(endDate)) {
+                if (tfTaskName.getText().equals(placeholderName)) {
+                    int res = JOptionPane.showOptionDialog(null, "Do you really want to create a Task with no name?", "Caution!", JOptionPane.YES_NO_OPTION, 1, null, null, null);
+                    if (res == 0) {
+                        User user = cbUser.getItemAt(cbUser.getSelectedIndex());
+                        task = new Task("No Taskname", user, startDate, endDate);
+                        ok = true;
+                        this.dispose();
+                    }
+                } else {
+                    String name = tfTaskName.getText();
                     User user = cbUser.getItemAt(cbUser.getSelectedIndex());
-                    task = new Task("No Taskname", user, startDate, endDate);
+                    task = new Task(name, user, startDate, endDate);
                     ok = true;
                     this.dispose();
                 }
             } else {
-                String name = tfTaskName.getText();
-                User user = cbUser.getItemAt(cbUser.getSelectedIndex());
-                task = new Task(name, user, startDate, endDate);
-                ok = true;
-                this.dispose();
+                JOptionPane.showMessageDialog(null, "Enddate must be after startdate!");
             }
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null, "There is something wrong with the date");

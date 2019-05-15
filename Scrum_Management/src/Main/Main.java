@@ -9,6 +9,7 @@ import BL.DataBase;
 import BL.Project;
 import GUI.MainScreenGUI;
 import GUI.ProjectCreationGUI;
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -22,7 +23,7 @@ import javax.swing.JOptionPane;
  */
 public class Main {
     
-    public boolean projectIsCreated() throws SQLException{
+    public boolean projectIsCreated() throws SQLException, IOException{
         Statement stat = DataBase.getDbInstance().getConn().createStatement();
         String sqlString = "SELECT COUNT(*) FROM public.\"Project\"";
         ResultSet set = stat.executeQuery(sqlString);
@@ -36,7 +37,7 @@ public class Main {
         return false;
     }
     
-    private Project getProject() throws SQLException {
+    private Project getProject() throws SQLException, IOException {
         Statement stat = DataBase.getDbInstance().getConn().createStatement();
         String sqlString = "SELECT \"ProjID\",\"Name\",\"Description\" FROM public.\"Project\"";
         ResultSet set = stat.executeQuery(sqlString);
@@ -63,7 +64,10 @@ public class Main {
             }
         } catch (SQLException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException io) {
+            JOptionPane.showMessageDialog(null, "Preferences are not correct! Look it up in the Project-manual");
         }
+        
     }
 
     

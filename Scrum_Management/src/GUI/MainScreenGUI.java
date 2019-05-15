@@ -14,6 +14,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -228,17 +229,35 @@ public class MainScreenGUI extends javax.swing.JFrame {
         }
         updateTimeline(paDraw.getGraphics());
     }
+
+    /**
+     * Adds the User to the database and displays it on JTable
+     *
+     * @param evt
+     */
     private void btAddUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btAddUserActionPerformed
         String name = JOptionPane.showInputDialog("Please enter a name:");
-        User user = new User(name);
-        try {
-            bl.add(user, project.getProjectId(), true);
-        } catch (SQLException ex) {
-            Logger.getLogger(MainScreenGUI.class.getName()).log(Level.SEVERE, null, ex);
+        if (name == null || name.equals("")) {
+            JOptionPane.showMessageDialog(null, "No name was entered. Nothing changed");
+        } else {
+            User user = new User(name);
+            try {
+                bl.add(user, project.getProjectId(), true);
+            } catch (SQLException ex) {
+                Logger.getLogger(MainScreenGUI.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException io) {
+                JOptionPane.showMessageDialog(null, "Preferences are not correct! Look it up in the Project-manual");
+            }
         }
+
 
     }//GEN-LAST:event_btAddUserActionPerformed
 
+    /**
+     * Adds the task to the database and displays it on Timetable
+     *
+     * @param evt
+     */
     private void btAddTaskActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btAddTaskActionPerformed
         TaskDialog dialog = new TaskDialog(this, true, bl.getUsers());
         dialog.setVisible(true);
@@ -248,22 +267,39 @@ public class MainScreenGUI extends javax.swing.JFrame {
                 bl.add(task, project.getProjectId(), true);
             } catch (SQLException ex) {
                 Logger.getLogger(MainScreenGUI.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException io) {
+                JOptionPane.showMessageDialog(null, "Preferences are not correct! Look it up in the Project-manual");
             }
             updateTimeline(paDraw.getGraphics());
         }
     }//GEN-LAST:event_btAddTaskActionPerformed
 
+    /**
+     * Shows the Product Backlog
+     *
+     * @param evt
+     */
     private void btProductBacklogActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btProductBacklogActionPerformed
         ProductBacklogGUI productBacklog = new ProductBacklogGUI(this, true, bl, currentWeek);
         productBacklog.setVisible(true);
         updateTimeline(paDraw.getGraphics());
     }//GEN-LAST:event_btProductBacklogActionPerformed
 
+    /**
+     * Changes the current week (back in time)
+     *
+     * @param evt
+     */
     private void btLeftActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btLeftActionPerformed
         currentWeek = currentWeek.minusDays(7);
         updateTimeline(paDraw.getGraphics());
     }//GEN-LAST:event_btLeftActionPerformed
 
+    /**
+     * Changes the current week (forward time)
+     *
+     * @param evt
+     */
     private void btRightActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRightActionPerformed
         currentWeek = currentWeek.plusDays(7);
         updateTimeline(paDraw.getGraphics());
@@ -273,6 +309,12 @@ public class MainScreenGUI extends javax.swing.JFrame {
         updateTimeline(paDraw.getGraphics());
     }//GEN-LAST:event_paDrawComponentResized
 
+    /**
+     * If a user is selected in the table, the user and all tasks will be
+     * deleted. Its using the BusinessLogic class to perform it.
+     *
+     * @param evt
+     */
     private void miDeleteUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miDeleteUserActionPerformed
         if (tableUsers.getSelectedRowCount() == 1) {
             int res = JOptionPane.showOptionDialog(null, "Do you really want to delete the User and all of his/her tasks?", "Caution!", JOptionPane.YES_NO_OPTION, 1, null, null, null);
@@ -283,6 +325,8 @@ public class MainScreenGUI extends javax.swing.JFrame {
                     updateTimeline(paDraw.getGraphics());
                 } catch (SQLException ex) {
                     Logger.getLogger(MainScreenGUI.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException io) {
+                    JOptionPane.showMessageDialog(null, "Preferences are not correct! Look it up in the Project-manual");
                 }
             }
         }

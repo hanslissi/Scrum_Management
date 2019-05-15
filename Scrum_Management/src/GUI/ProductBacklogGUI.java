@@ -7,6 +7,7 @@ package GUI;
 
 import BL.BusinessLogic;
 import BL.Task;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import javax.swing.DefaultListModel;
@@ -112,6 +113,8 @@ public class ProductBacklogGUI extends javax.swing.JDialog {
                 bl.deleteTask(idx);
             } catch (SQLException ex) {
                 JOptionPane.showMessageDialog(null, "Something went wrong with the database.");
+            } catch (IOException io) {
+                JOptionPane.showMessageDialog(null, "Preferences are not correct! Look it up in the Project-manual");
             }
             initializeEverything();
         }

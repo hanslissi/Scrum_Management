@@ -7,6 +7,7 @@ package GUI;
 
 import BL.DataBase;
 import BL.Project;
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -116,7 +117,7 @@ public class ProjectCreationGUI extends javax.swing.JFrame {
         }
     }
 
-    private void addProjectToDataBase(Project project) throws SQLException {
+    private void addProjectToDataBase(Project project) throws SQLException, IOException {
         Statement stat = DataBase.getDbInstance().getConn().createStatement();
         String sqlString = String.format("INSERT INTO public.\"Project\"(\"ProjID\", \"Name\", \"Description\") VALUES (%s, \'%s\', \'%s\');", project.getProjectId(), project.getName(), project.getDescription());
         stat.executeQuery(sqlString);
@@ -149,9 +150,11 @@ public class ProjectCreationGUI extends javax.swing.JFrame {
                     addProjectToDataBase(project);
                 } catch (SQLException ex) {
                     Logger.getLogger(ProjectCreationGUI.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException io) {
+                    JOptionPane.showMessageDialog(null, "Preferences are not correct! Look it up in the Project-manual");
                 }
-            new MainScreenGUI(project).setVisible(true);
-            this.dispose();
+                new MainScreenGUI(project).setVisible(true);
+                this.dispose();
             }
         } else {
             try {
@@ -159,6 +162,8 @@ public class ProjectCreationGUI extends javax.swing.JFrame {
                 addProjectToDataBase(project);
             } catch (SQLException ex) {
                 Logger.getLogger(ProjectCreationGUI.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException io) {
+                JOptionPane.showMessageDialog(null, "Preferences are not correct! Look it up in the Project-manual");
             }
             new MainScreenGUI(project).setVisible(true);
             this.dispose();

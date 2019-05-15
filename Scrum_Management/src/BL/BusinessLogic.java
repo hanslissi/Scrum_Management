@@ -7,6 +7,7 @@ package BL;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -33,7 +34,14 @@ public class BusinessLogic extends AbstractTableModel {
         dtfFromDataBase = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     }
 
-    public void add(User user, String projID, boolean addToDataBase) throws SQLException {
+    /**
+     * Adds the user
+     * @param user User which should be added
+     * @param projID Project where the user should be added to (foreign key)
+     * @param addToDataBase when its false it will only be added locally. ProjID can be null when this is false
+     * @throws SQLException 
+     */
+    public void add(User user, String projID, boolean addToDataBase) throws SQLException, IOException {
         if (addToDataBase) {
             addUserToDataBase(user, projID);
             String userID = checkUserId(user.getName());
@@ -45,7 +53,7 @@ public class BusinessLogic extends AbstractTableModel {
         fireTableRowsInserted(users.size() - 1, users.size() - 1);
     }
 
-    public void add(Task task, String projID, boolean addToDataBase) throws SQLException {
+    public void add(Task task, String projID, boolean addToDataBase) throws SQLException, IOException {
         if (addToDataBase) {
             addTaskToDataBase(task, projID);
             String taskID = getLastAddedTaskID();
@@ -57,21 +65,38 @@ public class BusinessLogic extends AbstractTableModel {
         tasks.add(task);
     }
 
-    public void addUserToDataBase(User user, String projID) throws SQLException {
+    /**
+     * Adds the given user to the Database with the foreign key to the given project
+     * @param user User which should be added
+     * @param projID Project where the user should be added to (foreign key)
+     * @throws SQLException 
+     */
+    public void addUserToDataBase(User user, String projID) throws SQLException, IOException {
         Statement stat = DataBase.getDbInstance().getConn().createStatement();
         String sqlString = String.format("INSERT INTO public.\"User\"(\"UserID\", \"fk_ProjID\", \"Username\") VALUES (DEFAULT, \'%s\', \'%s\');", projID, user.getName());
         stat.executeUpdate(sqlString);
         stat.close();
     }
 
-    public void addTaskToDataBase(Task task, String projID) throws SQLException {
+    /**
+     * Adds the given task to the Database with the foreign key to the given project
+     * @param task Task which should be added
+     * @param projID Project where the task should be added to (foreign key)
+     * @throws SQLException 
+     */
+    public void addTaskToDataBase(Task task, String projID) throws SQLException, IOException {
         Statement stat = DataBase.getDbInstance().getConn().createStatement();
         String sqlString = String.format("INSERT INTO public.\"Task\"(\"StartDate\", \"EndDate\", \"fk_ProjID\", \"fk_UserID\", \"TaskName\") VALUES (TO_DATE(\'%s\','DD.MM.YYYY'), TO_DATE(\'%s\','DD.MM.YYYY'), \'%s\', \'%s\', \'%s\');", dtf.format(task.getStartDate()), dtf.format(task.getEndDate()), projID, task.getUser().getUserid(), task.getTaskName());
         stat.executeUpdate(sqlString);
         stat.close();
     }
 
-    public String getLastAddedTaskID() throws SQLException {
+    /**
+     * Returns the TaskID of the last added Task in the Database
+     * @return Returns the TaskID as a String of the last added Task in the Database.
+     * @throws SQLException 
+     */
+    public String getLastAddedTaskID() throws SQLException, IOException {
         Statement stat = DataBase.getDbInstance().getConn().createStatement();
         String sqlString = String.format("SELECT MAX(\"TaskID\") \"Max\" FROM public.\"Task\";");
         ResultSet set = stat.executeQuery(sqlString);
@@ -81,7 +106,13 @@ public class BusinessLogic extends AbstractTableModel {
         return "";
     }
 
-    public String checkUserId(String username) throws SQLException {
+    /**
+     * Returns the UserID from the Database according to the username
+     * @param username The username of the user
+     * @return Returns UserID if username is found. When its not found it will return an empty String
+     * @throws SQLException
+     */
+    public String checkUserId(String username) throws SQLException, IOException {
         Statement stat = DataBase.getDbInstance().getConn().createStatement();
         String sqlString = String.format("SELECT * FROM public.\"User\" WHERE \"Username\" = \'%s\'", username);
         ResultSet rs = stat.executeQuery(sqlString);
@@ -132,6 +163,13 @@ public class BusinessLogic extends AbstractTableModel {
 
     }
 
+    /**
+     * Draws every task of the current week to the timeline (Graphics 2D)
+     * @param currentWeek current week which is displayed
+     * @param g2 Graphics of image
+     * @param width width of image
+     * @param height height of image
+     */
     public void drawTasks(LocalDate currentWeek, Graphics2D g2, int width, int height) {
         int i = 1;
         for (Task task : tasks) {
@@ -191,14 +229,24 @@ public class BusinessLogic extends AbstractTableModel {
         g2.setColor(Color.BLACK);
     }
 
-    public void deleteTaskFromDatabase(String taskid) throws SQLException {
+    /**
+     * Deletes the task with the taskID from the database.
+     * @param taskid taskID of task which should be deleted.
+     * @throws SQLException 
+     */
+    public void deleteTaskFromDatabase(String taskid) throws SQLException, IOException {
         Statement stat = DataBase.getDbInstance().getConn().createStatement();
         String sqlString = String.format("DELETE FROM public.\"Task\" WHERE \"TaskID\" = %s;", taskid);
         stat.executeUpdate(sqlString);
         stat.close();
     }
     
-    public void deleteUserFromDatabase(String userid) throws SQLException {
+    /**
+     * Deletes the user with the taskID from the database.
+     * @param userid userID of task which should be deleted.
+     * @throws SQLException 
+     */
+    public void deleteUserFromDatabase(String userid) throws SQLException, IOException {
         Statement stat = DataBase.getDbInstance().getConn().createStatement();
         String sqlString = String.format("DELETE FROM public.\"User\" WHERE \"UserID\" = %s;", userid);
         stat.executeUpdate(sqlString);
@@ -213,13 +261,22 @@ public class BusinessLogic extends AbstractTableModel {
         return tasks;
     }
 
-    public void deleteTask(int idx) throws SQLException {
+    /**
+     * Deletes Task from Database and deletes it locally
+     * @param idx Index of Task which should be deleted
+     * @throws SQLException 
+     */
+    public void deleteTask(int idx) throws SQLException, IOException {
         deleteTaskFromDatabase(tasks.get(idx).getTaskid());
         tasks.remove(idx);
     }
     
-    
-    public void deleteUser(int idx) throws SQLException {
+    /**
+     * Deletes User and User related tasks from database and locally
+     * @param idx Index of User which should be deleted
+     * @throws SQLException 
+     */
+    public void deleteUser(int idx) throws SQLException, IOException {
         for (int i = 0; i < tasks.size(); i++) {
             if(tasks.get(i).getUser() == users.get(idx)){
                 deleteTask(i);
