@@ -7,10 +7,16 @@ package GUI;
 
 import BL.BusinessLogic;
 import BL.Task;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
 /**
@@ -47,6 +53,7 @@ public class ProductBacklogGUI extends javax.swing.JDialog {
 
         pmDeleteFromAll = new javax.swing.JPopupMenu();
         miDeleteFromAll = new javax.swing.JMenuItem();
+        jPanel3 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -55,6 +62,7 @@ public class ProductBacklogGUI extends javax.swing.JDialog {
         jLabel2 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         liAll = new javax.swing.JList<>();
+        btExportCSV = new javax.swing.JButton();
 
         miDeleteFromAll.setText("Delete Task");
         miDeleteFromAll.addActionListener(new java.awt.event.ActionListener() {
@@ -65,7 +73,8 @@ public class ProductBacklogGUI extends javax.swing.JDialog {
         pmDeleteFromAll.add(miDeleteFromAll);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        getContentPane().setLayout(new java.awt.GridLayout(1, 2));
+
+        jPanel3.setLayout(new java.awt.GridLayout(1, 2));
 
         jPanel2.setLayout(new java.awt.BorderLayout());
 
@@ -82,7 +91,7 @@ public class ProductBacklogGUI extends javax.swing.JDialog {
 
         jPanel2.add(jScrollPane1, java.awt.BorderLayout.CENTER);
 
-        getContentPane().add(jPanel2);
+        jPanel3.add(jPanel2);
 
         jPanel1.setLayout(new java.awt.BorderLayout());
 
@@ -101,7 +110,17 @@ public class ProductBacklogGUI extends javax.swing.JDialog {
 
         jPanel1.add(jScrollPane2, java.awt.BorderLayout.CENTER);
 
-        getContentPane().add(jPanel1);
+        jPanel3.add(jPanel1);
+
+        getContentPane().add(jPanel3, java.awt.BorderLayout.CENTER);
+
+        btExportCSV.setText("Export CSV");
+        btExportCSV.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btExportCSVActionPerformed(evt);
+            }
+        });
+        getContentPane().add(btExportCSV, java.awt.BorderLayout.SOUTH);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -120,6 +139,28 @@ public class ProductBacklogGUI extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_miDeleteFromAllActionPerformed
 
+    private void btExportCSVActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btExportCSVActionPerformed
+        JFileChooser chooser = new JFileChooser();
+        int res = chooser.showOpenDialog(this);
+        if(res == JFileChooser.APPROVE_OPTION){
+            File saveToFile = chooser.getSelectedFile();
+            try {
+                BufferedWriter bw = new BufferedWriter(new FileWriter(saveToFile));
+                bw.write("taskname;username;startdate;enddate");
+                bw.newLine();
+                for (Task task : bl.getTasks()) {
+                    bw.write(String.format("%s;%s;%s;%s", task.getTaskName(), task.getUser().getName(), task.getStartDate(), task.getEndDate()));
+                    bw.newLine();
+                }
+                bw.flush();
+                bw.close();
+                JOptionPane.showMessageDialog(null, String.format("Everything done! Written to the file: %s",saveToFile.getAbsolutePath()));
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(null, "There is something wrong with the file!");
+            }
+        }
+    }//GEN-LAST:event_btExportCSVActionPerformed
+
     private void initializeEverything() {
         dlmAll.removeAllElements();
         dlmThisWeek.removeAllElements();
@@ -134,10 +175,12 @@ public class ProductBacklogGUI extends javax.swing.JDialog {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btExportCSV;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JList<String> liAll;

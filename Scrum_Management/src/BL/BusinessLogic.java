@@ -70,6 +70,7 @@ public class BusinessLogic extends AbstractTableModel {
      * @param user User which should be added
      * @param projID Project where the user should be added to (foreign key)
      * @throws SQLException 
+     * @throws java.io.IOException 
      */
     public void addUserToDataBase(User user, String projID) throws SQLException, IOException {
         Statement stat = DataBase.getDbInstance().getConn().createStatement();
@@ -83,6 +84,7 @@ public class BusinessLogic extends AbstractTableModel {
      * @param task Task which should be added
      * @param projID Project where the task should be added to (foreign key)
      * @throws SQLException 
+     * @throws java.io.IOException 
      */
     public void addTaskToDataBase(Task task, String projID) throws SQLException, IOException {
         Statement stat = DataBase.getDbInstance().getConn().createStatement();
@@ -95,6 +97,7 @@ public class BusinessLogic extends AbstractTableModel {
      * Returns the TaskID of the last added Task in the Database
      * @return Returns the TaskID as a String of the last added Task in the Database.
      * @throws SQLException 
+     * @throws java.io.IOException 
      */
     public String getLastAddedTaskID() throws SQLException, IOException {
         Statement stat = DataBase.getDbInstance().getConn().createStatement();
@@ -111,6 +114,7 @@ public class BusinessLogic extends AbstractTableModel {
      * @param username The username of the user
      * @return Returns UserID if username is found. When its not found it will return an empty String
      * @throws SQLException
+     * @throws java.io.IOException
      */
     public String checkUserId(String username) throws SQLException, IOException {
         Statement stat = DataBase.getDbInstance().getConn().createStatement();
@@ -233,6 +237,7 @@ public class BusinessLogic extends AbstractTableModel {
      * Deletes the task with the taskID from the database.
      * @param taskid taskID of task which should be deleted.
      * @throws SQLException 
+     * @throws java.io.IOException 
      */
     public void deleteTaskFromDatabase(String taskid) throws SQLException, IOException {
         Statement stat = DataBase.getDbInstance().getConn().createStatement();
@@ -245,6 +250,7 @@ public class BusinessLogic extends AbstractTableModel {
      * Deletes the user with the taskID from the database.
      * @param userid userID of task which should be deleted.
      * @throws SQLException 
+     * @throws java.io.IOException 
      */
     public void deleteUserFromDatabase(String userid) throws SQLException, IOException {
         Statement stat = DataBase.getDbInstance().getConn().createStatement();
@@ -265,6 +271,7 @@ public class BusinessLogic extends AbstractTableModel {
      * Deletes Task from Database and deletes it locally
      * @param idx Index of Task which should be deleted
      * @throws SQLException 
+     * @throws java.io.IOException 
      */
     public void deleteTask(int idx) throws SQLException, IOException {
         deleteTaskFromDatabase(tasks.get(idx).getTaskid());
@@ -275,6 +282,7 @@ public class BusinessLogic extends AbstractTableModel {
      * Deletes User and User related tasks from database and locally
      * @param idx Index of User which should be deleted
      * @throws SQLException 
+     * @throws java.io.IOException 
      */
     public void deleteUser(int idx) throws SQLException, IOException {
         for (int i = 0; i < tasks.size(); i++) {
