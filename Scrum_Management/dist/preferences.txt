@@ -1,0 +1,3 @@
+Server-URL=jdbc:postgresql://localhost:1521/scrum-management
+User=postgres
+Password=Postgresql4me
