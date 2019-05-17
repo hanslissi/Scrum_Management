@@ -246,7 +246,7 @@ public class MainScreenGUI extends javax.swing.JFrame {
             } catch (SQLException ex) {
                 Logger.getLogger(MainScreenGUI.class.getName()).log(Level.SEVERE, null, ex);
             } catch (IOException io) {
-                JOptionPane.showMessageDialog(null, "Preferences are not correct! Look it up in the Project-manual");
+                JOptionPane.showMessageDialog(null, "Preferences are not correct! Look it up in the README.txt file!");
             }
         }
 

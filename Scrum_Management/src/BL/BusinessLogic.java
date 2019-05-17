@@ -39,7 +39,7 @@ public class BusinessLogic extends AbstractTableModel {
      * @param user User which should be added
      * @param projID Project where the user should be added to (foreign key)
      * @param addToDataBase when its false it will only be added locally. ProjID can be null when this is false
-     * @throws SQLException 
+     * @throws SQLException
      */
     public void add(User user, String projID, boolean addToDataBase) throws SQLException, IOException {
         if (addToDataBase) {
@@ -70,7 +70,7 @@ public class BusinessLogic extends AbstractTableModel {
      * @param user User which should be added
      * @param projID Project where the user should be added to (foreign key)
      * @throws SQLException 
-     * @throws java.io.IOException 
+     * @throws java.io.IOException when preferences.txt file was wrongly edited.
      */
     public void addUserToDataBase(User user, String projID) throws SQLException, IOException {
         Statement stat = DataBase.getDbInstance().getConn().createStatement();
@@ -84,7 +84,7 @@ public class BusinessLogic extends AbstractTableModel {
      * @param task Task which should be added
      * @param projID Project where the task should be added to (foreign key)
      * @throws SQLException 
-     * @throws java.io.IOException 
+     * @throws java.io.IOException when preferences.txt file was wrongly edited.
      */
     public void addTaskToDataBase(Task task, String projID) throws SQLException, IOException {
         Statement stat = DataBase.getDbInstance().getConn().createStatement();
@@ -97,7 +97,7 @@ public class BusinessLogic extends AbstractTableModel {
      * Returns the TaskID of the last added Task in the Database
      * @return Returns the TaskID as a String of the last added Task in the Database.
      * @throws SQLException 
-     * @throws java.io.IOException 
+     * @throws java.io.IOException when preferences.txt file was wrongly edited.
      */
     public String getLastAddedTaskID() throws SQLException, IOException {
         Statement stat = DataBase.getDbInstance().getConn().createStatement();
@@ -237,7 +237,7 @@ public class BusinessLogic extends AbstractTableModel {
      * Deletes the task with the taskID from the database.
      * @param taskid taskID of task which should be deleted.
      * @throws SQLException 
-     * @throws java.io.IOException 
+     * @throws java.io.IOException when preferences.txt file was wrongly edited.
      */
     public void deleteTaskFromDatabase(String taskid) throws SQLException, IOException {
         Statement stat = DataBase.getDbInstance().getConn().createStatement();
@@ -250,7 +250,7 @@ public class BusinessLogic extends AbstractTableModel {
      * Deletes the user with the taskID from the database.
      * @param userid userID of task which should be deleted.
      * @throws SQLException 
-     * @throws java.io.IOException 
+     * @throws java.io.IOException when preferences.txt file was wrongly edited.
      */
     public void deleteUserFromDatabase(String userid) throws SQLException, IOException {
         Statement stat = DataBase.getDbInstance().getConn().createStatement();
@@ -271,7 +271,7 @@ public class BusinessLogic extends AbstractTableModel {
      * Deletes Task from Database and deletes it locally
      * @param idx Index of Task which should be deleted
      * @throws SQLException 
-     * @throws java.io.IOException 
+     * @throws java.io.IOException when preferences.txt file was wrongly edited.
      */
     public void deleteTask(int idx) throws SQLException, IOException {
         deleteTaskFromDatabase(tasks.get(idx).getTaskid());
@@ -282,7 +282,7 @@ public class BusinessLogic extends AbstractTableModel {
      * Deletes User and User related tasks from database and locally
      * @param idx Index of User which should be deleted
      * @throws SQLException 
-     * @throws java.io.IOException 
+     * @throws java.io.IOException when preferences.txt file was wrongly edited.
      */
     public void deleteUser(int idx) throws SQLException, IOException {
         for (int i = 0; i < tasks.size(); i++) {
@@ -293,7 +293,7 @@ public class BusinessLogic extends AbstractTableModel {
         }
         deleteUserFromDatabase(users.get(idx).getUserid());
         users.remove(idx);
-        fireTableRowsDeleted(0, users.size()-1);
+        fireTableRowsDeleted(0, users.size());
     }
 
     @Override

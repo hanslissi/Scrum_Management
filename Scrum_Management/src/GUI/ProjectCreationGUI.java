@@ -8,7 +8,6 @@ package GUI;
 import BL.DataBase;
 import BL.Project;
 import java.io.IOException;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.logging.Level;
